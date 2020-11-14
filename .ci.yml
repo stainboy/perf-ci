@@ -1,0 +1,22 @@
+version: 2
+
+flow:
+- name: react
+  runtime: node:14-alpine3.12
+  command:
+  - cd webapp
+  - yarn install
+  - yarn build
+
+- name: spring
+  runtime: gradle:6.7-jdk8
+  command:
+  - cp -r webapp/build/* src/main/resources/static/
+  - gradle build
+
+- name: docker
+  type: eureka/kaniko:v2
+  env:
+    DOCKERFILE: .ci/Dockerfile
+    CONTEXT: build
+    IMAGE_NAME: complex

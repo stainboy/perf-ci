@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "fullname" . }}
+  labels:
+    app: {{ template "name" . }}
+    chart: {{ .Chart.Name }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ template "name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      # applications
+      containers:
+      - name: {{ template "name" . }}
+        image: {{ index .Values "images" "complex" }}
+
+        ports:
+        - containerPort: {{.Values.service.port}}
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: {{.Values.service.port}}
+          initialDelaySeconds: 90
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: {{.Values.service.port}}
